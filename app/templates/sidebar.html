@@ -1,0 +1,28 @@
+{# sidebar.html — include con: #}
+{# {% set active_page = 'index' %} #}
+{# {% include 'sidebar.html' %} #}
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menú">
+  <span></span><span></span><span></span>
+</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <span>⌚ Garmin</span>
+    Sync Hub
+  </div>
+  <nav>
+    <a href="/"             class="{{ 'active' if active_page == 'index' }}"><span>🏠</span> Dashboard</a>
+    <a href="/body-metrics" class="{{ 'active' if active_page == 'body' }}"><span>⚖️</span> Composición</a>
+    <a href="/workouts"     class="{{ 'active' if active_page == 'workouts' }}"><span>🏃</span> Entrenamientos</a>
+    <a href="/auth"         class="{{ 'active' if active_page == 'auth' }}"><span>🔑</span> Conexión Garmin</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="garmin-badge">
+      <div class="dot {% if garmin_ok %}ok{% endif %}"></div>
+      Garmin {% if garmin_ok %}conectado{% else %}desconectado{% endif %}
+    </div>
+  </div>
+</aside>

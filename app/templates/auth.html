@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garmin Sync Hub — Conexión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GarminSync">
+  <meta name="theme-color" content="#0a0e17">
+</head>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+<body>
+<div class="layout">
+
+  {% set active_page = 'auth' %}
+  {% include 'sidebar.html' %}
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">// Auth</div>
+        <div class="page-sub">Garmin Auth — conectate a garmin</div>
+      </div>
+      <a href="/" class="btn btn-outline btn-sm">← Dashboard</a>
+    </div>
+    <div class="card" style="width:100%;max-width:420px;">
+  <div class="logo">⌚ Garmin Sync Hub</div>
+  <div class="subtitle">Conexión con Garmin Connect</div>
+
+  {% if garmin_ok %}
+  <div class="status-badge ok">✓ Ya estás conectado a Garmin Connect</div>
+  {% else %}
+  <div class="status-badge pending">⚠ Sin conexión — ingresa tus credenciales</div>
+  {% endif %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" action="/auth">
+    <div class="form-group">
+      <label>Email de Garmin Connect</label>
+      <input type="email" name="email" placeholder="tu@email.com" required autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+    </div>
+    <div class="form-group">
+      <label>Código MFA <span style="color:#64748b;font-weight:400">(opcional)</span></label>
+      <input type="text" name="mfa_code" placeholder="123456" maxlength="6" autocomplete="one-time-code">
+      <div class="hint">Solo si tienes verificación en dos pasos activada.</div>
+    </div>
+    <button type="submit" class="btn">
+      {% if authenticated %}Reconectar{% else %}Conectar a Garmin{% endif %}
+    </button>
+  </form>
+
+
+  <hr class="divider">
+
+  <div class="info-box">
+    <strong>¿Por qué necesito esto?</strong><br>
+    Los tokens OAuth se guardan localmente una sola vez. Después el sistema
+    se autentica solo sin pedirte credenciales de nuevo, incluso al reiniciar.
+    Tu contraseña <strong>no se almacena</strong> en ningún archivo.
+  </div>
+</div>
+  </main>
+</div>
+</body>
+</html>

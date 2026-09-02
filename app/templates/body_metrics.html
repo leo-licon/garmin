@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Composición Corporal — Garmin Sync Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GarminSync">
+  <meta name="theme-color" content="#0a0e17">
+</head>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+<body>
+<div class="layout">
+  {% set active_page = 'body' %}
+  {% include 'sidebar.html' %}
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">// composición corporal</div>
+        <div class="page-sub">Historial completo de mediciones</div>
+      </div>
+      <a href="/" class="btn btn-outline btn-sm">← Dashboard</a>
+    </div>
+
+    <!-- Trend summary (últimos valores) -->
+    {% if metrics %}
+    {% set last = metrics[0] %}
+    {% set prev = metrics[1] if metrics|length > 1 else none %}
+    <div class="trend-row">
+      <div class="trend-card">
+        <div class="trend-label">Peso</div>
+        <div class="trend-value">{{ last.weight_kg }}</div>
+        <div class="trend-sub">kg</div>
+        {% if prev and prev.weight_kg %}
+          {% set delta = last.weight_kg - prev.weight_kg %}
+          <div class="trend-delta {% if delta < 0 %}delta-down{% elif delta > 0 %}delta-up{% else %}delta-neutral{% endif %}">
+            {{ '%+.1f'|format(delta) }} kg vs anterior
+          </div>
+        {% endif %}
+      </div>
+      <div class="trend-card">
+        <div class="trend-label">Grasa corporal</div>
+        <div class="trend-value">{{ last.body_fat_pct or '—' }}</div>
+        <div class="trend-sub">%</div>
+        {% if prev and prev.body_fat_pct and last.body_fat_pct %}
+          {% set delta = last.body_fat_pct - prev.body_fat_pct %}
+          <div class="trend-delta {% if delta < 0 %}delta-down{% elif delta > 0 %}delta-up{% else %}delta-neutral{% endif %}">
+            {{ '%+.1f'|format(delta) }}% vs anterior
+          </div>
+        {% endif %}
+      </div>
+      <div class="trend-card">
+        <div class="trend-label">Masa muscular</div>
+        <div class="trend-value">{{ last.muscle_mass_pct or '—' }}</div>
+        <div class="trend-sub">%</div>
+        {% if prev and prev.muscle_mass_pct and last.muscle_mass_pct %}
+          {% set delta = last.muscle_mass_pct - prev.muscle_mass_pct %}
+          <div class="trend-delta {% if delta > 0 %}delta-down{% elif delta < 0 %}delta-up{% else %}delta-neutral{% endif %}">
+            {{ '%+.1f'|format(delta) }}% vs anterior
+          </div>
+        {% endif %}
+      </div>
+      <div class="trend-card">
+        <div class="trend-label">Grasa visceral</div>
+        <div class="trend-value">{{ last.visceral_fat or '—' }}</div>
+        <div class="trend-sub">nivel</div>
+      </div>
+      <div class="trend-card">
+        <div class="trend-label">Edad metabólica</div>
+        <div class="trend-value">{{ last.metabolic_age or '—' }}</div>
+        <div class="trend-sub">años</div>
+      </div>
+      <div class="trend-card">
+        <div class="trend-label">Rate metabólico</div>
+        <div class="trend-value">{{ last.metabolic_rate or '—' }}</div>
+        <div class="trend-sub">kcal</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Tabla historial -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Peso (kg)</th>
+            <th>Grasa %</th>
+            <th>Muscular %</th>
+            <th>Visceral</th>
+            <th>Edad Met.</th>
+            <th>Rate Met.</th>
+            <th>Garmin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in metrics %}
+          <tr>
+            <td class="mono">{{ m.date }}</td>
+            <td><strong>{{ m.weight_kg }}</strong></td>
+            <td>{{ m.body_fat_pct or '—' }}</td>
+            <td>{{ m.muscle_mass_pct or '—' }}</td>
+            <td>{{ m.visceral_fat or '—' }}</td>
+            <td>{{ m.metabolic_age or '—' }}</td>
+            <td>{{ m.metabolic_rate or '—' }}</td>
+            <td>
+              {% if m.garmin_upload_status == 'success' %}
+                <span class="badge badge-success">✓ subido</span>
+              {% elif m.garmin_upload_status == 'error' %}
+                <span class="badge badge-error" title="{{ m.garmin_error }}">✗ error</span>
+              {% else %}
+                <span class="badge badge-pending">⏳ pendiente</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty">Sin registros aún. Registra tu primera medición desde el dashboard.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

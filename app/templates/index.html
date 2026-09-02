@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garmin Sync Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GarminSync">
+  <meta name="theme-color" content="#0a0e17">
+</head>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+<body>
+<div class="layout">
+
+  {% set active_page = 'index' %}
+  {% include 'sidebar.html' %}
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">// dashboard</div>
+        <div class="page-sub">Garmin Sync Hub — cuerpo + entrenamientos</div>
+      </div>
+      <span style="font-family:var(--mono);font-size:0.75rem;color:var(--text-dim)" id="clock"></span>
+    </div>
+
+    <!-- ── Fase 1: Registro rápido de composición corporal ── -->
+    <div class="section" style="max-width:680px;">
+      <div class="section-header">
+        <div class="section-title">Fase 1 — Composición corporal</div>
+      </div>
+      <div class="card">
+        <!-- Hint si hay datos previos -->
+        {% if last_metric %}
+        <div style="font-size:0.78rem;color:var(--text-dim);font-family:var(--mono);margin-bottom:1rem;padding:0.6rem 0.9rem;background:#060b14;border-radius:8px;border-left:3px solid var(--accent)">
+          Pre-llenado desde última medición: <strong style="color:var(--text)">{{ last_metric.date }}</strong>
+          &nbsp;·&nbsp; Solo cambia los valores nuevos y haz click en subir.
+        </div>
+        {% endif %}
+        <div class="form-grid" id="metrics-form">
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="f-date" value="">
+          </div>
+          <div class="form-group">
+            <label>Peso (kg)</label>
+            <input type="number" id="f-weight" step="0.1" placeholder="82.5"
+              value="{{ last_metric.weight_kg if last_metric else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Grasa corporal (%)</label>
+            <input type="number" id="f-fat" step="0.1" placeholder="18.5"
+              value="{{ last_metric.body_fat_pct if last_metric and last_metric.body_fat_pct else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Masa muscular (%)</label>
+            <input type="number" id="f-muscle" step="0.1" placeholder="45.0"
+              value="{{ last_metric.muscle_mass_pct if last_metric and last_metric.muscle_mass_pct else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Grasa visceral <span style="color:var(--text-dim);font-size:0.7rem">(rara vez cambia)</span></label>
+            <input type="number" id="f-visceral" step="1" placeholder="8" min="1" max="20"
+              value="{{ last_metric.visceral_fat if last_metric and last_metric.visceral_fat else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Edad metabólica <span style="color:var(--text-dim);font-size:0.7rem">(rara vez cambia)</span></label>
+            <input type="number" id="f-metabolic-age" step="1" placeholder="32"
+              value="{{ last_metric.metabolic_age if last_metric and last_metric.metabolic_age else '' }}">
+          </div>
+          <div class="form-group">
+            <label>Rate metabólico <span style="color:var(--text-dim);font-size:0.7rem"></span></label>
+            <input type="number" id="f-metabolic-rate" step="1" placeholder="1800"
+              value="{{ last_metric.metabolic_rate if last_metric and last_metric.metabolic_rate else '' }}">
+          </div>
+          <div class="form-group full" style="flex-direction:row;gap:1rem;margin-top:0.5rem;">
+            <button class="btn btn-primary" onclick="submitMetrics()">⚡ Generar .fit y subir a Garmin</button>
+            <button class="btn btn-outline" onclick="window.location='/body-metrics'">Ver historial</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Fase 2: Subir plan de entrenamientos ── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Fase 2 — Plan de entrenamientos</div>
+      </div>
+      <div class="cards cards-2">
+        <div class="card">
+          <div class="card-title">Subir JSON de plan semanal</div>
+          <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <div class="upload-icon">📂</div>
+            <div class="upload-text">Arrastra tu <strong>workouts.json</strong> aquí<br>o haz click para seleccionar</div>
+          </div>
+          <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileUpload(this)">
+          <div style="margin-top:1rem;display:flex;gap:0.75rem;">
+            <button class="btn btn-outline btn-sm" onclick="showJsonExample()">Ver formato esperado</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Directorio vigilado</div>
+          <div style="font-family:var(--mono);font-size:0.8rem;color:var(--accent);background:#060b14;padding:0.75rem;border-radius:8px;margin-bottom:1rem;word-break:break-all;">
+            /data/workouts/inbox/
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-dim);line-height:1.6;">
+            Copia cualquier <code style="color:var(--accent)">.json</code> de entrenamientos en este directorio. El sistema lo detecta automáticamente, genera y agenda los workouts en Garmin Connect.
+          </p>
+          <div style="margin-top:1rem;">
+            <div class="card-title">Log en tiempo real</div>
+            <div class="live-log" id="live-log">
+              <div class="log-line info">// esperando eventos...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Últimas métricas ── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Últimas métricas corporales</div>
+        <a href="/body-metrics" class="btn btn-outline btn-sm">Ver todas →</a>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Peso</th><th>Muscular</th><th>Grasa%</th><th>Estado Garmin</th>
+            </tr>
+          </thead>
+          <tbody id="metrics-table">
+            {% for m in recent_metrics %}
+            <tr>
+              <td style="font-family:var(--mono);font-size:0.8rem">{{ m.date }}</td>
+              <td><strong>{{ m.weight_kg }} kg</strong></td>
+              <td>{{ m.muscle_mass_pct or '—' }}%</td>
+              <td>{{ m.body_fat_pct or '—' }}%</td>
+              <td>
+                {% if m.garmin_upload_status == 'success' %}
+                  <span class="badge badge-success">✓ subido</span>
+                {% elif m.garmin_upload_status == 'error' %}
+                  <span class="badge badge-error">✗ error</span>
+                {% else %}
+                  <span class="badge badge-pending">⏳ pendiente</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">Sin registros aún.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+<script>
+  // Clock
+  const clock = document.getElementById('clock');
+  setInterval(() => {
+    clock.textContent = new Date().toLocaleString('es-MX', {hour:'2-digit',minute:'2-digit',second:'2-digit',day:'2-digit',month:'short'});
+  }, 1000);
+
+  // Set today's date
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  // Toast
+  function toast(msg, type='success') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  // Submit body metrics
+  async function submitMetrics() {
+    const payload = {
+      date: document.getElementById('f-date').value,
+      weight_kg: parseFloat(document.getElementById('f-weight').value),
+      body_fat_pct: parseFloat(document.getElementById('f-fat').value) || null,
+      muscle_mass_pct: parseFloat(document.getElementById('f-muscle').value) || null,
+      visceral_fat: parseInt(document.getElementById('f-visceral').value) || null,
+      metabolic_age: parseInt(document.getElementById('f-metabolic-age').value) || null,
+      metabolic_rate: parseInt(document.getElementById('f-metabolic-rate').value) || null,
+    };
+    if (!payload.date || !payload.weight_kg) { toast('Fecha y peso son obligatorios', 'error'); return; }
+    try {
+      const res = await fetch('/api/body-metrics', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast(`✅ Subido a Garmin: ${data.date} — ${data.weight_kg} kg · ${data.body_fat_pct ?? '—'}% grasa`);
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        toast(`❌ ${data.error}`, 'error');
+      }
+    } catch(e) { toast(`Error de red: ${e}`, 'error'); }
+  }
+
+  // File upload
+  async function handleFileUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    toast(`⏳ Procesando ${file.name}...`);
+    try {
+      const res = await fetch('/api/workout-plans/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (res.ok) {
+        const ok = data.results.filter(r=>r.status==='success').length;
+        const fail = data.results.filter(r=>r.status==='error').length;
+        toast(`✅ Plan subido: ${ok} workouts agendados, ${fail} errores`);
+        addLog(`Plan ${file.name}: ${ok} OK, ${fail} errores`, ok && !fail ? 'ok' : 'err');
+      } else {
+        toast(`❌ ${data.error}`, 'error');
+      }
+    } catch(e) { toast(`Error: ${e}`, 'error'); }
+  }
+
+  // Drag & drop
+  const dropZone = document.getElementById('drop-zone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      document.getElementById('file-input').files = dt.files;
+      handleFileUpload(document.getElementById('file-input'));
+    }
+  });
+
+  // Live log
+  function addLog(msg, type='info') {
+    const log = document.getElementById('live-log');
+    const line = document.createElement('div');
+    const ts = new Date().toLocaleTimeString('es-MX');
+    line.className = `log-line ${type}`;
+    line.textContent = `[${ts}] ${msg}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // WebSocket
+  const socket = io();
+  socket.on('plan_processed', data => {
+    const ok = data.results.filter(r=>r.status==='success').length;
+    const fail = data.results.filter(r=>r.status==='error').length;
+    addLog(`📂 ${data.filename} → ${ok} workouts agendados, ${fail} errores`, ok ? 'ok' : 'err');
+    toast(`📂 Archivo detectado: ${data.filename}`);
+  });
+
+  // JSON example modal
+  function showJsonExample() {
+    const example = JSON.stringify([
+      {
+        "name": "Carrera Fácil 5K",
+        "sport_type": "running",
+        "scheduled_date": "2026-03-25",
+        "duration_secs": 1800,
+        "description": "Rodaje suave de recuperación",
+        "steps": [
+          {"type": "warmup",   "duration_secs": 300},
+          {"type": "interval", "duration_secs": 1200, "target_pace_min_per_km": 6.0},
+          {"type": "cooldown", "duration_secs": 300}
+        ]
+      },
+      {
+        "name": "Intervalos 4x800",
+        "sport_type": "running",
+        "scheduled_date": "2026-03-27",
+        "duration_secs": 2400,
+        "steps": [
+          {"type": "warmup",   "duration_secs": 600},
+          {"type": "repeat",   "repetitions": 4, "steps": [
+            {"type": "interval", "duration_secs": 200, "target_pace_min_per_km": 4.0},
+            {"type": "recovery", "duration_secs": 90}
+          ]},
+          {"type": "cooldown", "duration_secs": 600}
+        ]
+      }
+    ], null, 2);
+    alert(example);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  garmin-sync:
+    build: .
+    container_name: garmin-sync-hub
+    ports:
+      - "5001:5000"
+    volumes:
+      # Persistent data: tokens, FIT files, workout JSONs
+      - garmin_data:/data
+      # Optional: map a host directory as the "inbox" for workout JSONs
+      # - ./my-workouts:/data/workouts/inbox
+    environment:
+      - SECRET_KEY=change-this-in-production
+      - GARTH_HOME=/data/garmin_tokens
+    restart: unless-stopped
+
+volumes:
+  garmin_data:

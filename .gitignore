@@ -1,0 +1,7 @@
+venv/
+instance/
+.idea/
+.DS_Store
+*.pyc
+__pycache__/
+out

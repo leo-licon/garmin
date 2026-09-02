@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Carrera Fácil — Recuperación",
+    "sport_type": "running",
+    "scheduled_date": "2026-03-24",
+    "duration_secs": 1800,
+    "description": "Rodaje suave Z2, mantener conversación posible",
+    "steps": [
+      {"type": "warmup",   "duration_secs": 300,  "target_hr_bpm": 130},
+      {"type": "interval", "duration_secs": 1200, "target_pace_min_per_km": 6.2},
+      {"type": "cooldown", "duration_secs": 300}
+    ]
+  },
+  {
+    "name": "Fuerza — Tren superior",
+    "sport_type": "strength",
+    "scheduled_date": "2026-03-25",
+    "duration_secs": 3600,
+    "description": "Empuje + tracción + core",
+    "steps": [
+      {"type": "warmup",   "duration_secs": 600},
+      {"type": "interval", "duration_secs": 2400},
+      {"type": "cooldown", "duration_secs": 600}
+    ]
+  },
+  {
+    "name": "Intervalos 5×1000m",
+    "sport_type": "running",
+    "scheduled_date": "2026-03-26",
+    "duration_secs": 3600,
+    "description": "Sesión de calidad en pista o ruta plana",
+    "steps": [
+      {"type": "warmup", "duration_secs": 900},
+      {
+        "type": "repeat",
+        "repetitions": 5,
+        "steps": [
+          {"type": "interval", "duration_secs": 270, "target_pace_min_per_km": 4.5},
+          {"type": "recovery", "duration_secs": 90,  "target_pace_min_per_km": 7.0}
+        ]
+      },
+      {"type": "cooldown", "duration_secs": 600}
+    ]
+  },
+  {
+    "name": "Largo dominical — 18K",
+    "sport_type": "running",
+    "scheduled_date": "2026-03-29",
+    "duration_secs": 6300,
+    "description": "Rodaje largo en Z2, sin presión de ritmo",
+    "steps": [
+      {"type": "warmup",   "duration_secs": 600,  "target_hr_bpm": 135},
+      {"type": "interval", "duration_secs": 4800, "target_hr_bpm": 148},
+      {"type": "cooldown", "duration_secs": 900}
+    ]
+  }
+]
