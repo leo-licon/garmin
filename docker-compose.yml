@@ -6,7 +6,7 @@ services:
     container_name: garmin_app
     restart: unless-stopped
     ports:
-      - "5001:5000"
+      - "5000:5000"
     volumes:
       # Mapea la carpeta 'out' de tu servidor a la carpeta 'out' que espera la app dentro del contenedor
       - ./out:/app/out

@@ -11,6 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Exponer el puerto de Flask-SocketIO
-EXPOSE 5001
+EXPOSE 5000
 
 CMD ["python", "run.py"]
