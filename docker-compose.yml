@@ -10,5 +10,6 @@ services:
     volumes:
       # Mapea la carpeta 'out' de tu servidor a la carpeta 'out' que espera la app dentro del contenedor
       - ./out:/app/out
+      - ./instance:/app/instance
     environment:
       - TZ=America/CHIHUAHUA
