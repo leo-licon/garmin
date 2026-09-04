@@ -71,7 +71,7 @@ def login_with_credentials(email: str, password: str, mfa_code: str | None = Non
             client.login(mfa_code=mfa_code)
         else:
             raise
-    client.garth.dump(TOKEN_DIR)
+    client.client.dump(TOKEN_DIR)
     logger.info("Garmin: login successful, tokens saved.")
     return True
 
@@ -93,7 +93,7 @@ def upload_body_metrics(fit_file_path: str) -> dict:
     files = {
         "file": ("body_composition.fit", fit_bytes, "application/octet-stream"),
     }
-    result = client.garth.post("connectapi", url, files=files, api=True).json()
+    result = client.client.post("connectapi", url, files=files, api=True).json()
     logger.info("Garmin body upload result: %s", result)
     return result
 
