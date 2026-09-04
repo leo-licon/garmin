@@ -13,3 +13,4 @@ services:
       - ./instance:/app/instance
     environment:
       - TZ=America/CHIHUAHUA
+      - GARTH_HOME=/app/out/data/garmin_tokens
