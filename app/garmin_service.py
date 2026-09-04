@@ -26,18 +26,34 @@ TOKEN_DIR = os.environ.get('GARTH_HOME', './out/data/garmin_tokens')
 # ──────────────────────────────────────────────
 
 def get_client() -> Garmin:
-    """Return an authenticated Garmin client, reusing saved tokens when possible."""
+    """Return an authenticated Garmin client using the existing Garth tokens."""
     Path(TOKEN_DIR).mkdir(parents=True, exist_ok=True)
-    client = Garmin()
+
     try:
-        client.login(TOKEN_DIR)
-        logger.info("Garmin: reused saved tokens from %s", TOKEN_DIR)
+        # Restore the existing Garth OAuth session.
+        garth.resume(TOKEN_DIR)
+
+        # Create the GarminConnect wrapper without calling login().
+        client = Garmin()
+
+        # Reuse the already-authenticated Garth HTTP client.
+        client.client = garth.client
+
+        # Verify that the restored session actually works.
+        client.client.connectapi("/userprofile-service/socialProfile")
+
+        logger.info("Garmin: reused existing Garth tokens from %s", TOKEN_DIR)
+
+        return client
+
     except Exception as exc:
-        logger.warning("Garmin: saved tokens invalid or missing (%s). Re-login required.", exc)
+        logger.warning(
+            "Garmin: could not restore saved Garth session: %s",
+            exc,
+        )
         raise RuntimeError(
             "No valid Garmin session. Open /auth in the web app to log in."
         ) from exc
-    return client
 
 
 def login_with_credentials(email: str, password: str, mfa_code: str | None = None) -> bool:
