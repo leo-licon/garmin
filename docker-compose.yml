@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   garmin-sync:
     build: .
@@ -12,5 +10,6 @@ services:
       - ./out:/app/out
       - ./instance:/app/instance
     environment:
-      - TZ=America/CHIHUAHUA
+      - TZ=America/Chihuahua
+      - SOCKETIO_ASYNC_MODE=gevent
       - GARTH_HOME=/app/out/data/garmin_tokens
