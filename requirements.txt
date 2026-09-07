@@ -12,3 +12,5 @@ watchdog>=4.0
 werkzeug>=3.0
 fit-tool
 Pillow
+gevent
+gevent-websocket
